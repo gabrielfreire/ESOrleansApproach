@@ -1,0 +1,227 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: esorleansapproach-config
+  namespace: esorleansapproach
+  labels:
+    app: esorleansapproach-config
+data:
+  # this databaseconnection is compatible with credentials in the cloud SMARTPlatform cluster
+  Database_DbName: esorleansapproach.db
+  RabbitMQConnection__Queue: ESOrleansApproach # < Replace with Messaging Queue name for your service
+---
+# deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: esorleansapproach-pod
+  labels:
+    orleans/serviceId: silo_service
+    orleans/clusterId: silo_cluster
+  namespace: esorleansapproach
+spec:
+  selector:
+    matchLabels:
+      app: esorleansapproach-pod
+      orleans/serviceId: silo_service
+      orleans/clusterId: silo_cluster
+  template:
+    metadata:
+      labels:
+        app: esorleansapproach-pod
+        # The serviceId label is used to identify the service to Orleans
+        orleans/serviceId: silo_service
+
+        # The clusterId label is used to identify an instance of a cluster to Orleans.
+        # Typically, this will be the same value as serviceId or any fixed value.
+        # In cases where you are not using rolling deployments (for example, blue/green deployments),
+        # this value can allow for distinct clusters which do not communicate directly with each others,
+        # but which still share the same storage and other resources.
+        orleans/clusterId: silo_cluster
+    spec:
+      containers:
+      - name: esorleansapproach
+        image: <account_name>/esorleansapproach:latest
+        imagePullPolicy: Always
+        # resources:
+        #   limits:
+        #     memory: "1024Mi"
+        #     cpu: "1000m"
+        ports:
+        - containerPort: 80
+        - containerPort: 443
+        - containerPort: 11111
+        - containerPort: 30000
+        env:
+          - name: RabbitMQConnection__Queue
+            valueFrom:
+              configMapKeyRef:
+                name: esorleansapproach-config
+                key: RabbitMQConnection__Queue
+          - name: RabbitMQConnection__APIBaseUrl
+            valueFrom:
+              configMapKeyRef:
+                name: generalplatform-config
+                key: RabbitMQConnection__APIBaseUrl
+          - name: RabbitMQConnection__HostUrl
+            valueFrom:
+              configMapKeyRef:
+                name: generalplatform-config
+                key: RabbitMQConnection__HostUrl
+          - name: RabbitMQConnection__Username
+            valueFrom:
+              configMapKeyRef:
+                name: generalplatform-config
+                key: RabbitMQConnection__Username
+          - name: RabbitMQConnection__Password
+            valueFrom:
+              configMapKeyRef:
+                name: generalplatform-config
+                key: RabbitMQConnection__Password
+          - name: TenantConfiguration__TenantClaimType
+            valueFrom:
+              configMapKeyRef:
+                name: generalplatform-config
+                key: TenantConfiguration__TenantClaimType
+          - name: IdentityConfiguration__ClientId
+            valueFrom:
+              configMapKeyRef:
+                name: generalplatform-config
+                key: IdentityConfiguration__ClientId
+          - name: IdentityConfiguration__ClientSecret
+            valueFrom:
+              configMapKeyRef:
+                name: generalplatform-config
+                key: IdentityConfiguration__ClientSecret
+          - name: IdentityConfiguration__AdminCliClientSecret
+            valueFrom:
+              configMapKeyRef:
+                name: generalplatform-config
+                key: IdentityConfiguration__AdminCliClientSecret
+          - name: IdentityConfiguration__Authority
+            valueFrom:
+              configMapKeyRef:
+                name: generalplatform-config
+                key: IdentityConfiguration__Authority
+          - name: SMARTPlatformSDK__CoreApiBaseUrl
+            valueFrom:
+              configMapKeyRef:
+                name: generalplatform-config
+                key: SMARTPlatformSDK__CoreApiBaseUrl
+          - name: SMARTPlatformSDK__FhirApiBaseUrl
+            valueFrom:
+              configMapKeyRef:
+                name: generalplatform-config
+                key: SMARTPlatformSDK__FhirApiBaseUrl
+          - name: SMARTPlatformSDK__LoggingApiBaseUrl
+            valueFrom:
+              configMapKeyRef:
+                name: generalplatform-config
+                key: SMARTPlatformSDK__LoggingApiBaseUrl
+          - name: SMARTPlatformSDK__Hl7ToFhirConverterApiBaseUrl
+            valueFrom:
+              configMapKeyRef:
+                name: generalplatform-config
+                key: SMARTPlatformSDK__Hl7ToFhirConverterApiBaseUrl
+        # For orleans
+          - name: DOTNET_SHUTDOWNTIMEOUTSECONDS
+            valueFrom:
+              configMapKeyRef:
+                name: generalplatform-config
+                key: DOTNET_SHUTDOWNTIMEOUTSECONDS
+          - name: ASPNETCORE_URLS
+            valueFrom:
+              configMapKeyRef:
+                name: generalplatform-config
+                key: ASPNETCORE_URLS
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: POD_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+          - name: OrleansConfiguration__SiloClustering__ClusterId
+            valueFrom:
+              configMapKeyRef:
+                name: generalplatform-config
+                key: ClusterId
+          - name: OrleansConfiguration__SiloClustering__ServiceId
+            valueFrom:
+              configMapKeyRef:
+                name: generalplatform-config
+                key: ServiceId
+          - name: ORLEANS_CLUSTER_ID
+            valueFrom:
+              configMapKeyRef:
+                name: generalplatform-config
+                key: ClusterId
+          - name: ORLEANS_SERVICE_ID
+            valueFrom:
+              configMapKeyRef:
+                name: generalplatform-config
+                key: ServiceId
+          - name: OrleansConfiguration__SiloClustering__ClusteringDatabaseName
+            valueFrom:
+              configMapKeyRef:
+                name: generalplatform-config
+                key: ClusteringDatabaseName
+          - name: Database__DbName
+            valueFrom:
+              configMapKeyRef:
+                name: esorleansapproach-config
+                key: Database__DbName
+          - name: Database__Host
+            valueFrom:
+              configMapKeyRef:
+                name: generalplatform-config
+                key: Database__Host
+          - name: Database__Port
+            valueFrom:
+              configMapKeyRef:
+                name: generalplatform-config
+                key: Database__Port
+          - name: Database__User
+            valueFrom: { secretKeyRef: { name: pgcluster-pguser-postgres, key: user } }
+          - name: Database__Password
+            valueFrom: { secretKeyRef: { name: pgcluster-pguser-postgres, key: password } }
+      terminationGracePeriodSeconds: 180
+  minReadySeconds: 60
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 0
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: esorleansapproach-service
+  namespace: esorleansapproach
+spec:
+  selector:
+    app: esorleansapproach-pod
+  ports:
+  - port: 80
+    name: "http-80"
+    protocol: TCP
+    targetPort: 80
+  - port: 443
+    name: "https-443"
+    protocol: TCP
+    targetPort: 443
+  - port: 11111
+    name: "tcp-11111"
+    protocol: TCP
+    targetPort: 11111
+  - port: 30000
+    name: "tcp-30000"
+    protocol: TCP
+    targetPort: 30000
+  type: NodePort

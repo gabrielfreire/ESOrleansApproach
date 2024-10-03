@@ -1,0 +1,27 @@
+stages:
+- name: Publish images
+  steps:
+  - publishImageConfig:
+      dockerfilePath: ./src/Dockerfile
+      buildContext: src/
+      tag: <account_name>/smartplatform:${CICD_EXECUTION_SEQUENCE}
+      pushRemote: true
+      registry: index.docker.io
+    when:
+      branch:
+        include:
+        - release
+- name: Deploy
+  steps:
+  - applyYamlConfig:
+      path: ./kubernetes/smartplatform-deployment.yml
+    when:
+      branch:
+        include:
+        - release
+branch:
+  include:
+  - release
+  exclude:
+  - master
+notification: {}

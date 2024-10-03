@@ -1,0 +1,29 @@
+def IMAGE_NAME = "<account_name>/ESOrleansApproach"
+def IMAGE_NAME_ARM = "<account_name>/ESOrleansApproach-arm"
+def IMAGE_VERSION = "latest"
+def IMAGE_NAME_WITH_VERSION = "${IMAGE_NAME}:${IMAGE_VERSION}"
+def IMAGE_NAME_WITH_VERSION_ARM = "${IMAGE_NAME_ARM}:${IMAGE_VERSION}"
+
+def NAMESPACE = "smartplatform"
+def CONTAINER_NAME = "ESOrleansApproach"
+def DEPLOYMENT_NAME = "ESOrleansApproach-pod"
+def KUBE_DEPLOYMENT_FILE = "kubernetes/deployment.yml"
+def KUBE_CLUSTER_CONFIG_PI = "pi-clusterk8s.config"
+def KUBE_CLUSTER_CONFIG_AZURE = "az-clusterk8s.config"
+
+node {
+    stage("Deploy app to kubernetes cluster using config: ${KUBE_CLUSTER_CONFIG_PI} and ${KUBE_CLUSTER_CONFIG_AZ}") {
+        withKubeConfig([credentialsId: "${KUBE_CLUSTER_CONFIG_PI}"]) {
+            sh 'curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"'
+            sh 'chmod u+x ./kubectl'
+            sh "./kubectl apply -f ${KUBE_DEPLOYMENT_FILE}"
+            sh "./kubectl -n ${NAMESPACE} set image deployment/${DEPLOYMENT_NAME} ${CONTAINER_NAME}=${IMAGE_NAME_WITH_VERSION_ARM}"
+        }
+        withKubeConfig([credentialsId: "${KUBE_CLUSTER_CONFIG_AZ}"]) {
+            sh 'curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"'
+            sh 'chmod u+x ./kubectl'
+            sh "./kubectl apply -f ${KUBE_DEPLOYMENT_FILE}"
+            sh "./kubectl -n ${NAMESPACE} set image deployment/${DEPLOYMENT_NAME} ${CONTAINER_NAME}=${IMAGE_NAME_WITH_VERSION}"
+        }
+    }
+}
