@@ -6,6 +6,14 @@ How to use MS Orleans JournaledGrain with EF Core for a robust event-sourcing / 
 
 - JournaledGrain implementation `src\Grains\AggregateRootBase.cs`
 
+- Entities
+    - `src\Domain\Entities\Tenant.cs`
+    - `src\Domain\Entities\Tenant.Customers.cs`
+    - `src\Domain\Entities\Tenant.ShoppingCarts.cs`
+    - `src\Domain\Entities\Customer.cs`
+    - `src\Domain\Entities\ShoppingCart.cs`
+    - `src\Domain\Entities\ShoppingCartItem.cs`
+
 - Aggregate implementation 
     - `src\Grains\TenantAggregate.cs`
     - `src\Grains\TenantAggregate.CustomersManagement.cs`
