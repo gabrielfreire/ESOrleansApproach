@@ -1,6 +1,16 @@
  # Event-Sourcing Orleans Approach
 
-How to use MS Orleans JournaledGrain with EF Core for a robust event-sourcing / DDD implementation
+How to use MS Orleans JournaledGrain with EF Core for a robust event-sourcing / DDD implementation, an opinion.
+
+## Table of Contents
+- [Relevant Files](#files)
+- [Tests](#tests)
+- [The Why and The How](#the-why-and-the-how)
+- [SaveChangesAsync](#savechangesasync)
+
+## Files
+
+Relevant files
 
 - Grain interfaces `src\GrainInterfaces\`
 
@@ -20,11 +30,13 @@ How to use MS Orleans JournaledGrain with EF Core for a robust event-sourcing / 
     - `src\Grains\TenantAggregate.CustomersManagement.cs`
     - `src\Grains\TenantAggregate.ShoppingCartManagement.cs`
 
-- DbContext is in `src\Infrastructure\Persistence\ApplicationDbContext.cs` 
+- DbContext is in `src\Infrastructure\Persistence\ApplicationDbContext.cs`
+
+- Test is in `tests\Application.IntegrationTests\TenantAggregateTests.cs` 
 
 
 
-## Run integration tests
+## Tests
 
 Best way to checkout how this project works is to run the integration tests at `tests\Application.IntegrationTests`
 
@@ -222,7 +234,9 @@ crazy way to do things, maybe I am overcomplicating, I don't know, I'm not a EF 
 I am open to suggestions.
 
 
-## ApplicationDbContext.cs -> SaveChangesAsync override
+## SaveChangesAsync
+
+**ApplicationDbContext.cs -> SaveChangesAsync override**
 
 ```csharp
 public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = new CancellationToken())
