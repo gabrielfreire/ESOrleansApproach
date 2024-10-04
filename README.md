@@ -136,6 +136,12 @@ otherwise I leave it as `Modified`. That's it! This seems to work flawlessly, I 
 written many unit/integration tests trying to break it but all my tests pass so and the 
 application works as expected, I am hopeful this is a good approach overall.
 
+This solution allowed me to create very complex data relationships from a single state object,
+in this case the `Tenant.cs` class is the highest level and make any changes just 
+by raising events and making pure POCO modifications, I don't ever need to use a reference of 
+the `DbContext` because everything is magically handled by the `AggregateRootBase.cs` JournaledGrain and
+the EF Core ChangeTracker.
+
 Although this solution seems to work I am not sure this approach is the best. 
 The reason for this is because the `SaveChangesAsync` looks weird to me and not very 
 intuitive at all, maybe someone has done it this way before, maybe this is a 
