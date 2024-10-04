@@ -142,6 +142,79 @@ by raising events and making pure POCO modifications, I don't ever need to use a
 the `DbContext` because everything is magically handled by the `AggregateRootBase.cs` JournaledGrain and
 the EF Core ChangeTracker.
 
+Also, using a single main state class and build all the data relationships from there is 
+just more intuitive to me, that's why I used this approach, I understand this is not the 
+mainstream way of doing things but I really like it.
+If you think of an e-commerce multi-tenanted software platform, you have multiple tenants, a tenant
+is your highest level, then each tenant
+has many customers, each customer has many roles, a shopping cart and many orders, each tenant
+has many stores, each store has many pages, products, categories, themes, etc. This means that
+you could end up with a massive `TenantAggregate.cs` god file with thousands of lines of code which
+happened to me but I solved this issue by using `partial class`'s, that's why you will find things like
+`TenantAggregate.cs`, `TenantAggregate.CustomersManagement.cs`, `TenantAggregate.ShoppingCartManagement.cs`,
+`Tenant.cs`, `Tenant.Customers.cs`, `Tenant.ShoppingCarts.cs`, etc, in this solution. This is completely
+acceptable to me but may not be for other people, most engineers seem to prefer a more obvious separation.  
+
+This way of doing things makes it possible to represent the entire software solution by 
+just looking at the state class and using Orleans allows us to keep the entire data 
+for tenants in memory which makes queries extremelly efficient.
+
+```csharp
+[GenerateSerializer]
+public partial class Tenant : StateBase
+{
+    [Id(0)]
+    public string Name { get; private set; }
+    // ....
+    [Id(4)]
+    public List<Customer> Customers { get; private set; } = [];
+    [Id(5)]
+    public List<Store> Stores { get; private set; } = [];
+    // ....
+    [Id(7)]
+    public List<Role> Roles { get; private set; } = [];
+    [Id(8)]
+    public List<OnlineCustomer> OnlineCustomers { get; private set; } = [];
+    [Id(9)]
+    public List<Log> Logs { get; private set; } = [];
+    // ...
+    [Id(11)]
+    public TenantSubscription ActiveSubscription { get; private set; }
+}
+[GenerateSerializer]
+public class Customer : StateBase
+{
+    [Id(0)]
+    public string Name { get; private set; }
+    [Id(1)]
+    private List<Guid> _roleIds = [];
+    public List<Guid> RoleIds { get => _roleIds; }
+    [Id(2)]
+    public List<Address> Addresses { get; private set; } = [];
+    // .....
+    [Id(3)]
+    public List<Order> Orders { get; private set; } = [];
+    [Id(4)]
+    public ShoppingCart ShoppingCart { get; private set; }
+    [Id(5)]
+    public Guid TenantId { get; private set; }
+}
+
+[GenerateSerializer]
+public class Address : StateBase
+{
+    [Id(0)]
+    public string FirstName { get; private set; }
+    // ...
+    [Id(6)]
+    public string City { get; private set; }
+    // ...
+    [Id(13)]
+    public Guid CustomerId { get; private set; }
+}
+```
+
+
 Although this solution seems to work I am not sure this approach is the best. 
 The reason for this is because the `SaveChangesAsync` looks weird to me and not very 
 intuitive at all, maybe someone has done it this way before, maybe this is a 
