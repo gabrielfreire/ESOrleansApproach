@@ -24,16 +24,6 @@ namespace ESOrleansApproach.Domain.Common
     [JsonSerializable(typeof(object))]
     internal partial class JsonContext : JsonSerializerContext
     {
-        public JsonContext(JsonSerializerOptions options) : base(options)
-        {
-        }
-
-        protected override JsonSerializerOptions GeneratedSerializerOptions => throw new NotImplementedException();
-
-        public override JsonTypeInfo GetTypeInfo(Type type)
-        {
-            throw new NotImplementedException();
-        }
     }
     public static class JsonDeepUtils
     {
