@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <RootNamespace>ESOrleansApproach.GrainInterfaces</RootNamespace>
 	<AssemblyName>ESOrleansApproach.GrainInterfaces</AssemblyName>
     <PackageId>ESOrleansApproach.GrainInterfaces</PackageId>
@@ -13,18 +13,18 @@
   </PropertyGroup>
 
   <ItemGroup>
-	  <PackageReference Include="Microsoft.Orleans.Core.Abstractions" Version="8.2.0" />
-	  <PackageReference Include="Microsoft.Orleans.Runtime" Version="8.2.0" />
-	  <PackageReference Include="Microsoft.Orleans.Sdk" Version="8.2.0" />
-	  <PackageReference Include="Microsoft.Orleans.EventSourcing" Version="8.2.0" />
-	  <PackageReference Include="Microsoft.Orleans.Persistence.AdoNet" Version="8.2.0" />
-	  <PackageReference Include="Microsoft.Orleans.Clustering.AdoNet" Version="8.2.0" />
-	  <PackageReference Include="Microsoft.Orleans.Reminders.AdoNet" Version="8.2.0" />
-	  <PackageReference Include="Microsoft.Orleans.Hosting.Kubernetes" Version="8.2.0" />
-	  <PackageReference Include="Microsoft.Orleans.Server" Version="8.2.0" />
-	  <PackageReference Include="Microsoft.Orleans.Streaming" Version="8.2.0" />
-	  <PackageReference Include="Microsoft.Orleans.Serialization" Version="8.2.0" />
-	  <PackageReference Include="Microsoft.Orleans.Serialization.NewtonsoftJson" Version="8.2.0" />
+    <PackageReference Include="Microsoft.Orleans.Core.Abstractions" Version="10.0.1" />
+    <PackageReference Include="Microsoft.Orleans.Runtime" Version="10.0.1" />
+    <PackageReference Include="Microsoft.Orleans.Sdk" Version="10.0.1" />
+    <PackageReference Include="Microsoft.Orleans.EventSourcing" Version="10.0.1" />
+    <PackageReference Include="Microsoft.Orleans.Persistence.AdoNet" Version="10.0.1" />
+    <PackageReference Include="Microsoft.Orleans.Clustering.AdoNet" Version="10.0.1" />
+    <PackageReference Include="Microsoft.Orleans.Reminders.AdoNet" Version="10.0.1" />
+    <PackageReference Include="Microsoft.Orleans.Hosting.Kubernetes" Version="10.0.1" />
+    <PackageReference Include="Microsoft.Orleans.Server" Version="10.0.1" />
+    <PackageReference Include="Microsoft.Orleans.Streaming" Version="10.0.1" />
+    <PackageReference Include="Microsoft.Orleans.Serialization" Version="10.0.1" />
+    <PackageReference Include="Microsoft.Orleans.Serialization.NewtonsoftJson" Version="10.0.1" />
   </ItemGroup>
 
   <ItemGroup>

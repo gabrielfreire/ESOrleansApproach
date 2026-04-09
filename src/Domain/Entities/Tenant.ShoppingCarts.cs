@@ -10,23 +10,17 @@ namespace ESOrleansApproach.Domain.Entities
     {
         public void Apply(ShoppingCartItemAdded @event)
         {
-            base.Apply(@event);
-
             var customer = FindCustomer(@event.CustomerId);
-            customer?.ShoppingCart.Apply(@event);
-            customer?.ShoppingCart.ApplyAllLevels(@event, this);
+            customer?.ShoppingCart?.Apply(@event);
         }
         public void Apply(ShoppingCartItemRemoved @event)
         {
-            base.Apply(@event);
-
             var shoppingCartItem = this.GetShoppingCartItemById(@event.ShoppingCartItemId);
 
             if (shoppingCartItem is not null)
             {
                 var shoppingCart = this.GetShoppingCartById(shoppingCartItem.ShoppingCartId);
                 shoppingCart?.Apply(@event);
-                shoppingCart?.ApplyAllLevels(@event, this);
             }
         }
     }

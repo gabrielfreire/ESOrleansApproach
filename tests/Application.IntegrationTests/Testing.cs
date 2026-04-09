@@ -30,7 +30,8 @@ namespace Application.IntegrationTests
         [OneTimeSetUp]
         public async Task RunBeforeAnyTests()
         {
-
+            Environment.SetEnvironmentVariable("INTEGRATION_TESTS", "true");
+            
             // add configuration from appsettings.json
             var builder = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
@@ -45,7 +46,7 @@ namespace Application.IntegrationTests
 
             // wire up services to use while testing
             services = new ServiceCollection();
-            services.AddScoped<IConfiguration>(sp => _configuration);
+            services.AddSingleton<IConfiguration>(sp => _configuration);
             services.AddSingleton<IHostEnvironment>(hostedEnvironment);
             services.AddApplicationServices(_configuration, hostedEnvironment);
 
@@ -161,7 +162,7 @@ namespace Application.IntegrationTests
                         services.AddHttpClient();
                         var sp = services.BuildServiceProvider();
 
-                        services.AddScoped<IConfiguration>(sp => _configuration);
+                        services.AddSingleton<IConfiguration>(sp => _configuration);
 
                         services.AddSingleton<IHostEnvironment>(hostedEnvironment);
                         services.AddApplicationServices(_configuration, hostedEnvironment);

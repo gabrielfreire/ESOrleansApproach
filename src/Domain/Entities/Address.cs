@@ -41,13 +41,6 @@ namespace ESOrleansApproach.Domain.Entities
         [Id(13)]
         public Guid CustomerId { get; set; }
 
-        public override void ApplyAllLevels<T>(EventBase eventBase, T rootEntity)
-        {
-            var tenant = rootEntity as Tenant;
-            var customer = tenant.FindCustomer(CustomerId);
-            if (customer is not null)
-                CallApply(customer, eventBase);
-        }
         public void Apply(AddressDetailsChanged @event)
         {
             base.Apply(@event);

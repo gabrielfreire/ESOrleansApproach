@@ -24,8 +24,6 @@ namespace ESOrleansApproach.Domain.Entities
 
         public void Apply(TenantOnboarded @event)
         {
-            base.Apply(@event);
-
             if (!string.IsNullOrEmpty(@event.TenantName))
             {
                 Name = @event.TenantName;
@@ -44,10 +42,14 @@ namespace ESOrleansApproach.Domain.Entities
                 Name,
                 Id);
 
-            _customer.Apply(@event);
+            Subscribe(_customer);
 
             if (!Customers.Any(s => s.Id == _customer.Id))
+            {
                 Customers.Add(_customer);
+            }
+
+            base.Apply(@event);
 
         }
     }

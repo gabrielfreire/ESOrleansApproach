@@ -27,8 +27,6 @@ namespace ESOrleansApproach.Domain.Entities
 
         public void Apply(ShoppingCartItemAdded @event)
         {
-            base.Apply(@event);
-
             var existingItem = Items.Where(i => i.ProductId == @event.ProductId).FirstOrDefault();
 
             if (existingItem is not null)
@@ -43,13 +41,13 @@ namespace ESOrleansApproach.Domain.Entities
                     @event.Price,
                     Id);
 
+                Subscribe(item);
                 _items.Add(item);
+                base.Apply(@event);
             }
         }
         public void Apply(ShoppingCartItemRemoved @event)
         {
-            base.Apply(@event);
-
             var existingItem = FindItem(@event.ShoppingCartItem.ProductId);
             if (existingItem is not null && !existingItem.Deleted)
             {
@@ -59,20 +57,14 @@ namespace ESOrleansApproach.Domain.Entities
                 }
                 else
                 {
+                    Unsubscribe(existingItem);
                     _items.Remove(existingItem);
-                    Delete(existingItem);
+                    base.Apply(@event);
                 }
             }
         }
-        public override void ApplyAllLevels<T>(EventBase eventBase, T rootEntity)
-        {
-            var tenant = rootEntity as Tenant;
-            var customer = tenant.FindCustomer(CustomerId);
-            if (customer is not null)
-                CallApply(customer, eventBase);
-        }
         public bool IsEmpty() => !Items.Any();
-        public ShoppingCartItem? FindItem(Guid productId) => Items.FirstOrDefault(i => i.ProductId == productId);
-        public ShoppingCartItem? FindItem(Guid productId, decimal price) => Items.FirstOrDefault(i => i.ProductId == productId && i.Price == price);
+        public ShoppingCartItem FindItem(Guid productId) => Items.FirstOrDefault(i => i.ProductId == productId);
+        public ShoppingCartItem FindItem(Guid productId, decimal price) => Items.FirstOrDefault(i => i.ProductId == productId && i.Price == price);
     }
 }

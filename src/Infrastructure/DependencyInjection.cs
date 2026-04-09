@@ -27,8 +27,15 @@ namespace ESOrleansApproach.Infrastructure
         /// <returns></returns>
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment hostEnvironment)
         {
-            services.AddAuthentication(configuration);
-            services.AddAuthorization();
+            var isIntegrationTests = string.Equals(Environment.GetEnvironmentVariable("INTEGRATION_TESTS"), "true", StringComparison.InvariantCultureIgnoreCase);
+
+            if (!isIntegrationTests)
+            {
+                services.AddAuthentication(configuration);
+
+                services.AddAuthorization();
+            }
+            
             services.AddDbContextFactory<ApplicationDbContext>();
             // multi-tenancy services
             services.AddTransient<IConnectionStringBuilder, ConnectionStringBuilder>();

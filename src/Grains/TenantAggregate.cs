@@ -26,24 +26,28 @@ namespace ESOrleansApproach.Grains
             _configuration = ServiceProvider.GetRequiredService<IConfiguration>();
         }
         public override async Task<(int Version, Tenant state)> ReadSnapshot(
-            ApplicationDbContext dbContext, 
-            bool includeAll = true)
+            ApplicationDbContext dbContext,
+            bool includeAll = true,
+            bool track = false)
         {
             Tenant? tenant = null;
 
             if (includeAll)
             {
-                tenant = await dbContext.Tenants
+                var query = dbContext.Tenants
                     .IncludeAll()
-                    .AsNoTracking()
-                    .AsSplitQuery()
-                    .FirstOrDefaultAsync(t => t.Id == GrainPrimaryKey);
+                    .AsSplitQuery();
+
+                tenant = track
+                    ? await query.FirstOrDefaultAsync(t => t.Id == GrainPrimaryKey)
+                    : await query.AsNoTracking().FirstOrDefaultAsync(t => t.Id == GrainPrimaryKey);
             }
             else
             {
-                tenant = await dbContext.Tenants
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync(t => t.Id == GrainPrimaryKey);
+                var query = dbContext.Tenants.AsQueryable();
+                tenant = track
+                    ? await query.FirstOrDefaultAsync(t => t.Id == GrainPrimaryKey)
+                    : await query.AsNoTracking().FirstOrDefaultAsync(t => t.Id == GrainPrimaryKey);
             }
 
             if (tenant is null)

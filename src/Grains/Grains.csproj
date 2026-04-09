@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <RootNamespace>ESOrleansApproach.Grains</RootNamespace>
 	<AssemblyName>ESOrleansApproach.Grains</AssemblyName>
   </PropertyGroup>
@@ -11,8 +11,8 @@
     <ProjectReference Include="..\GrainInterfaces\GrainInterfaces.csproj" />
     <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
 	  
-	  <PackageReference Include="Microsoft.Orleans.Sdk" Version="8.2.0" />
-	  <PackageReference Include="Microsoft.Orleans.Runtime" Version="8.2.0" />
+    <PackageReference Include="Microsoft.Orleans.Sdk" Version="10.0.1" />
+    <PackageReference Include="Microsoft.Orleans.Runtime" Version="10.0.1" />
   </ItemGroup>
 
 </Project>

@@ -3,9 +3,8 @@ using Orleans;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace ESOrleansApproach.Domain.Common
 {
@@ -14,6 +13,9 @@ namespace ESOrleansApproach.Domain.Common
     {
         [Id(0)]
         public byte[] Value { get; set; }
+
+        [Id(1)]
+        public List<DomainEventChange> Changes { get; set; } = [];
     }
 
     /// <summary>
@@ -31,6 +33,16 @@ namespace ESOrleansApproach.Domain.Common
         public string EventType { get; set; }
         [Id(3)]
         public string EventTypeName { get; set; }
+        [Id(4)]
+        public string CorrelationId { get; set; }
+        [Id(5)]
+        public string TraceId { get; set; }
+        [Id(6)]
+        public string RequestPath { get; set; }
+        [Id(7)]
+        public string Source { get; set; }
+        [Id(8)]
+        public string UserAgent { get; set; }
 
         public DomainEvent() { }
         public DomainEvent(Guid tenantId, int version, EventBase @event)
@@ -41,6 +53,29 @@ namespace ESOrleansApproach.Domain.Common
             Data = new EventData() { Value = Serialize(@event) };
             EventType = @event.GetType().AssemblyQualifiedName;
             EventTypeName = @event.GetType().Name;
+        }
+
+        public void ApplyRequestContext(HttpContextSurrogate httpContext)
+        {
+            if (httpContext is null)
+                return;
+
+            RequestPath ??= httpContext.RequestPath;
+            UserAgent ??= httpContext.UserAgent;
+            Source ??= httpContext.Host;
+        }
+
+        public void ApplyActivityContext(Activity activity)
+        {
+            if (activity is null)
+                return;
+
+            TraceId ??= activity.TraceId.ToString();
+
+            if (string.IsNullOrWhiteSpace(CorrelationId))
+            {
+                CorrelationId = activity.ParentId ?? activity.TraceId.ToString();
+            }
         }
 
         private byte[] Serialize(EventBase @event)

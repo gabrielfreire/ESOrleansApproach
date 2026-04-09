@@ -1,17 +1,15 @@
 ﻿using Orleans;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace ESOrleansApproach.Domain.Common
 {
     [GenerateSerializer]
-    public class StateBase : StateBaseAudit
+    public class StateBase : StateBaseAudit, IChangeNotifier
     {
         [Id(0)]
         [Key, DatabaseGenerated(DatabaseGeneratedOption.None)]
@@ -27,12 +25,22 @@ namespace ESOrleansApproach.Domain.Common
         [NotMapped]
         public List<object> DeletedEntities { get; set; } = [];
 
+        public event EventHandler<EventBase> Changed;
+
+        [NonSerialized]
+        private EventBase _lastAppliedEvent;
+
         /// <summary>
         /// Applies an event to the entity and marks it for update in EF DbContext ChangeTracker
         /// </summary>
         /// <param name="eventBase"></param>
         public void Apply(EventBase eventBase)
         {
+            if (ReferenceEquals(_lastAppliedEvent, eventBase))
+                return;
+
+            _lastAppliedEvent = eventBase;
+
             if (Id == Guid.Empty)
             {
                 Id = eventBase.AggregateId;
@@ -43,7 +51,36 @@ namespace ESOrleansApproach.Domain.Common
                 UpdatedOnUtc = DateTimeOffset.UtcNow;
             }
 
-            Version = eventBase.Version;
+            Version++;
+
+            Changed?.Invoke(this, eventBase);
+        }
+
+        public void Subscribe(StateBase state)
+        {
+            if (state is null)
+                return;
+
+            state.Changed -= OnChanged;
+            state.Changed += OnChanged;
+        }
+
+        public void Unsubscribe(StateBase state)
+        {
+            if (state is null)
+                return;
+
+            state.Changed -= OnChanged;
+        }
+
+        public void NotifyChanged(EventBase e)
+        {
+            Apply(e);
+        }
+
+        private void OnChanged(object sender, EventBase e)
+        {
+            NotifyChanged(e);
         }
 
         /// <summary>
@@ -88,6 +125,18 @@ namespace ESOrleansApproach.Domain.Common
         {
             DeletedEntities.Add(entity);
         }
+
+        protected virtual byte[] ComputeHash()
+        {
+            var bytes = SerializeToBytes();
+            return SHA256.HashData(bytes);
+        }
+
+        public TState Clone<TState>() where TState : StateBase => (TState)JsonDeepUtils.DeepClone((object)this);
+
+        public string SerializeToString() => JsonDeepUtils.SerializeToString((object)this);
+
+        public byte[] SerializeToBytes() => JsonDeepUtils.Serialize((object)this);
 
         public Guid GenerateGuid(string key)
         {

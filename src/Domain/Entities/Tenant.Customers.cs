@@ -10,8 +10,6 @@ namespace ESOrleansApproach.Domain.Entities
     {
         public void Apply(CustomerDetailsChanged @event)
         {
-            base.Apply(@event);
-
             var customer = Customers.FirstOrDefault(c => c.Id == @event.CustomerId);
 
             if (customer is not null)
@@ -21,8 +19,6 @@ namespace ESOrleansApproach.Domain.Entities
         }
         public void Apply(CustomerAdded @event)
         {
-            base.Apply(@event);
-
             if (!Customers.Any(c => c.Id == @event.CustomerId))
             {
                 var customer = new Customer(@event.CustomerId,
@@ -31,48 +27,44 @@ namespace ESOrleansApproach.Domain.Entities
                     @event.PreferredUsername,
                     Name,
                     Id);
-                customer.Apply(@event);
+                Subscribe(customer);
                 Customers.Add(customer);
+                base.Apply(@event);
             }
         }
 
         public void Apply(CustomerRemoved @event)
         {
-            base.Apply(@event);
-
             var _entity = FindCustomer(@event.CustomerId);
 
             if (_entity is not null)
             {
+                Unsubscribe(_entity);
                 Customers.Remove(_entity);
-                Delete(_entity);
+                base.Apply(@event);
             }
         }
         public void Apply(AddressAdded @event)
         {
-            base.Apply(@event);
-
             var customer = FindCustomer(@event.CustomerId);
             customer?.Apply(@event);
         }
 
         public void Apply(AddressRemoved @event)
         {
-            base.Apply(@event);
-
             var customer = FindCustomer(@event.CustomerId);
             customer?.Apply(@event);
         }
         public void Apply(AddressDetailsChanged @event)
         {
-            base.Apply(@event);
-
             var address = this.GetAddressById(@event.Address.Id);
-            address?.Apply(@event);
-            address?.ApplyAllLevels(@event, this);
+            if (address is not null)
+            {
+                address.Apply(@event);
+            }
         }
 
-        public Customer? FindCustomer(Guid customerId) => Customers.FirstOrDefault(c => c.Id == customerId);
+        public Customer FindCustomer(Guid customerId) => Customers.FirstOrDefault(c => c.Id == customerId);
 
     }
 }

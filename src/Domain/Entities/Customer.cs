@@ -23,7 +23,7 @@
             Guid id,
             Guid shoppingCartId,
             string name,
-            string? email,
+            string email,
             string tenant,
             Guid tenantId)
         {
@@ -33,18 +33,17 @@
             Tenant = tenant;
             TenantId = tenantId;
             ShoppingCart = new ShoppingCart(shoppingCartId, id, tenant);
+            Subscribe(ShoppingCart);
         }
 
         public void Apply(CustomerDetailsChanged @event)
         {
-            base.Apply(@event);
-
             Name = @event.Name;
             PreferredUsername = @event.PreferredUsername;
+            base.Apply(@event);
         }
         public void Apply(AddressAdded @event)
         {
-            base.Apply(@event);
             var address = FindAddress(@event.Address.Id);
 
             if (address is null)
@@ -52,23 +51,23 @@
                 var _address = new Address();
                 _address.CreateAddress(@event.Address);
                 _address.CustomerId = Id;
-                _address.Apply(@event);
+                Subscribe(_address);
                 Addresses.Add(_address);
+                base.Apply(@event);
             }
         }
         public void Apply(AddressRemoved @event)
         {
-            base.Apply(@event);
-
             var _entity = FindAddress(@event.AddressId);
             if (_entity is not null)
             {
+                Unsubscribe(_entity);
                 Addresses.Remove(_entity);
-                Delete(_entity);
+                base.Apply(@event);
             }
         }
 
-        public Address? FindAddress(Guid addressId) => Addresses.FirstOrDefault(a => a.Id == addressId);
+        public Address FindAddress(Guid addressId) => Addresses.FirstOrDefault(a => a.Id == addressId);
         public ClaimsPrincipal ToClaimsPrincipal()
         {
             var claimValues = Customer.ToClaims(this);
