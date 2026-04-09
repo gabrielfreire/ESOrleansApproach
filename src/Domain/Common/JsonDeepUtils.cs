@@ -14,6 +14,7 @@ namespace ESOrleansApproach.Domain.Common
     [JsonSerializable(typeof(Customer))]
     [JsonSerializable(typeof(ShoppingCart))]
     [JsonSerializable(typeof(ShoppingCartItem))]
+    [JsonSerializable(typeof(Address))]
     [JsonSerializable(typeof(StateBase))]
     [JsonSerializable(typeof(JObject))]
     [JsonSerializable(typeof(EventBase))]
@@ -33,6 +34,7 @@ namespace ESOrleansApproach.Domain.Common
             { typeof(StateBase), JsonContext.Default.StateBase },
             { typeof(Tenant), JsonContext.Default.Tenant },
             { typeof(Customer), JsonContext.Default.Customer },
+            { typeof(Address), JsonContext.Default.Address },
             { typeof(ShoppingCart), JsonContext.Default.ShoppingCart },
             { typeof(DomainEvent), JsonContext.Default.DomainEvent },
             { typeof(EventData), JsonContext.Default.EventData },
@@ -60,14 +62,6 @@ namespace ESOrleansApproach.Domain.Common
             buf.ResetWrittenCount();
             return buf;
         }
-
-        private static readonly JsonSerializerOptions Options = new()
-        {
-            IncludeFields = true,
-            PropertyNameCaseInsensitive = true,
-            WriteIndented = false
-        };
-
         public static JsonTypeInfo? GetJsonTypeInfo(Type type)
             => _typeMap.TryGetValue(type, out var info) ? info : null;
 
